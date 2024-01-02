@@ -15,7 +15,7 @@ class Subject(ABC):
 
 class Observer(ABC):
     @abstractmethod
-    def update(self, temp, humidity, pressure):
+    def update(self):
         pass
 
 class DisplayElement(ABC):
@@ -38,7 +38,16 @@ class WeatherData(Subject):
 
     def notify_observers(self):
         for observer in self.observers:
-            observer.update(self.temperature, self.humidity, self.pressure)
+            observer.update()
+    
+    def get_temperature(self):
+        return self.temperature
+    
+    def get_humidity(self):
+        return self.humidity
+    
+    def get_pressure(self):
+        return self.pressure
 
     def measurements_changed(self):
         self.notify_observers()
@@ -58,9 +67,9 @@ class CurrentConditionsDisplay(Observer, DisplayElement):
         self.weather_data = weather_data
         weather_data.register_observer(self)
 
-    def update(self, temperature, humidity, pressure):
-        self.temperature = temperature
-        self.humidity = humidity
+    def update(self):
+        self.temperature = self.weather_data.get_temperature()
+        self.humidity = self.weather_data.get_humidity()
         self.display()
 
     def display(self):
@@ -74,10 +83,10 @@ class StatisticsDisplay(Observer, DisplayElement):
         self.weather_data = weather_data
         weather_data.register_observer(self)
 
-    def update(self, temperature, humidity, pressure):
-        self.temperatures.append(temperature)
-        self.humidities.append(humidity)
-        self.pressures.append(pressure)
+    def update(self):
+        self.temperatures.append(self.weather_data.get_temperature())
+        self.humidities.append(self.weather_data.get_humidity())
+        self.pressures.append(self.weather_data.get_pressure())
         self.display()
 
     def display(self):
@@ -92,9 +101,9 @@ class ForecastDisplay(Observer, DisplayElement):
         self.weather_data = weather_data
         weather_data.register_observer(self)
 
-    def update(self, temperature, humidity, pressure):
+    def update(self):
         self.last_pressure = self.current_pressure
-        self.current_pressure = pressure
+        self.current_pressure = self.weather_data.get_pressure()
         self.display()
 
     def display(self):
